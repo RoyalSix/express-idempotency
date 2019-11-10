@@ -44,11 +44,13 @@ function storeMw(req, res, next) {
   const idempotencyKey = req.get('Idempotency-Key');
   if (idempotencyKey) {
     if (queue.includes(idempotencyKey)) {
-      setInterval(() => {
+      const checkForUnlocked = () => {
         if (!queue.includes(idempotencyKey)) {
+          clearInterval(interval);
           return checkMw(req, res, next);
         }
-      }, 100)
+      }
+      const interval = setInterval(checkForUnlocked, 100);
     } else {
       queue.push(idempotencyKey)
       res.once('end', () => {
