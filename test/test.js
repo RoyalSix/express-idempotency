@@ -1,9 +1,13 @@
 /// <reference types="jest" />
 const httpMocks = require('node-mocks-http');
-
 const middleware = require('../index.js')();
 const generateCacheKey = require('../lib/generate-cache-key');
 const cache = require('../lib/cache-provider');
+const express = require('express');
+const request = require('request');
+const app = express();
+const port = 3000;
+const v4 = require('uuid').v4;
 
 describe('# Express Idempotency', function () {
   describe('request handler creation', function () {
@@ -46,10 +50,7 @@ describe('# Express Idempotency', function () {
             var idempotencyKey = req.get('Idempotency-Key');
             var cacheKey = generateCacheKey(req, idempotencyKey);
             var storedResponse = cache.get(cacheKey);
-            if (!storedResponse) {
-              throw new Error('Response was not stored in cache');
-            }
-
+            expect(storedResponse).toBeTruthy();
             expect(storedResponse).toHaveProperty('statusCode');
             expect(storedResponse).toHaveProperty('body');
             expect(storedResponse).toHaveProperty('headers');
@@ -95,9 +96,7 @@ describe('# Express Idempotency', function () {
             var idempotencyKey = req.get('Idempotency-Key');
             var cacheKey = generateCacheKey(req, idempotencyKey);
             var storedResponse = cache.get(cacheKey);
-            if (!storedResponse) {
-              throw new Error('Response was not stored in cache');
-            }
+            expect(storedResponse).toBeTruthy();
 
             var expectedHeaders = responseToStore.headers;
             expectedHeaders['x-cache'] = 'HIT'; // expect a cache header
@@ -138,15 +137,13 @@ describe('# Express Idempotency', function () {
           var idempotencyKey = req.get('Idempotency-Key');
           var cacheKey = generateCacheKey(req, idempotencyKey);
           var storedResponse = cache.get(cacheKey);
-          if (storedResponse) {
-            throw new Error('A response was erroneously stored in cache');
-          }
+          expect(storedResponse).toBeFalsy();
           done();
         });
 
         middleware(req, res, function next(error) {
           if (error) {
-            throw new Error('Expected not to receive an error');
+            throw new Error(error);
           }
 
           // set a dummy response status and body
@@ -156,4 +153,44 @@ describe('# Express Idempotency', function () {
       });
     });
   });
+
+  describe.only('Simultaneous Requests ', () => {
+    describe('with idempotency-key header in request', function () {
+      it('should handle simultaneous requests', (done) => {
+        app.use(middleware);
+
+        app.get('/', (req, res, next) => {
+          setTimeout(() => {
+            res.setHeader('x-testing', v4());
+            res.send();
+          }, 1000);
+        });
+
+        app.listen(port, () => {
+          const options = {
+            url: 'http://localhost:' + port,
+            headers: {
+              'Idempotency-Key': 'ABCDEFG',
+            }
+          };
+          let expected;
+          const callback = jest.fn((err, res, body, done) => {
+            if (!expected) {
+              expected = body;
+            }
+            expect(body).toEqual(expected);
+            if (done) {
+              expect(callback).toHaveBeenCalledTimes(2);
+              done();
+            }
+          });
+
+          options.body = v4();
+          request(options, callback);
+          options.body = v4();
+          request(options, (...args) => callback(...args, done));
+        });
+      })
+    });
+  })
 });

@@ -26,6 +26,7 @@
   "homepage": "https://github.com/optimuspay/express-idempotency#readme",
   "devDependencies": {
     "events": "^1.1.1",
+    "express": "^4.17.1",
     "jest": "^24.9.0",
     "node-mocks-http": "^1.6.2",
     "util": "^0.10.3"
@@ -36,6 +37,7 @@
     "debug": "^2.6.8",
     "express-end": "0.0.8",
     "lru-cache": "^4.1.1",
-    "md5": "^2.2.1"
+    "md5": "^2.2.1",
+    "uuid": "^3.3.3"
   }
 }
