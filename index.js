@@ -13,7 +13,7 @@ var generateCacheKey = require('./lib/generate-cache-key');
  * @param {*} res 
  * @param {*} next 
  */
-var checkMw = function(req, res, next) {
+var checkMw = function (req, res, next) {
   var idempotencyKey = req.get('Idempotency-Key');
 
   if (!idempotencyKey) {
@@ -58,7 +58,7 @@ function storeMw(req, res, next) {
   return next();
 }
 
-var idempotency = function (options) {
+var idempotency = function () {
   // chain pattern from helmet - see https://github.com/helmetjs/helmet/blob/master/index.js
   var chain = connect();
   chain.use(expressEnd);

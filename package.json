@@ -7,7 +7,7 @@
     "node": ">=6.10.3"
   },
   "scripts": {
-    "test": "mocha --reporter spec"
+    "test": "jest ./test"
   },
   "repository": {
     "type": "git",
@@ -25,13 +25,13 @@
   },
   "homepage": "https://github.com/optimuspay/express-idempotency#readme",
   "devDependencies": {
-    "chai": "^4.0.2",
     "events": "^1.1.1",
-    "mocha": "^3.4.2",
+    "jest": "^24.9.0",
     "node-mocks-http": "^1.6.2",
     "util": "^0.10.3"
   },
   "dependencies": {
+    "@types/jest": "24.0.22",
     "connect": "^3.6.2",
     "debug": "^2.6.8",
     "express-end": "0.0.8",
