@@ -70,6 +70,8 @@ function storeMw(req, res, next) {
       });
       return next();
     }
+  } else {
+    return next();
   }
 }
 

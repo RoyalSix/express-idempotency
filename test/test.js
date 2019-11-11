@@ -154,7 +154,7 @@ describe('# Express Idempotency', function () {
     });
   });
 
-  describe.only('Simultaneous Requests ', () => {
+  describe('Simultaneous Requests ', () => {
     describe('with idempotency-key header in request', function () {
       it('should handle simultaneous requests', (done) => {
         app.use(middleware);
